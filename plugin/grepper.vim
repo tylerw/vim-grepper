@@ -324,15 +324,12 @@ endfunction
 
 " s:restore_mapping() {{{2
 function! s:restore_mapping(mapping)
-  if !empty(a:mapping)
-    execute printf('%s %s%s%s%s %s %s',
-          \ (a:mapping.noremap ? 'cnoremap' : 'cmap'),
-          \ (a:mapping.silent  ? '<silent>' : ''    ),
-          \ (a:mapping.buffer  ? '<buffer>' : ''    ),
-          \ (a:mapping.nowait  ? '<nowait>' : ''    ),
-          \ (a:mapping.expr    ? '<expr>'   : ''    ),
-          \  a:mapping.lhs,
-          \  substitute(a:mapping.rhs, '\c<sid>', '<SNR>'.a:mapping.sid.'_', 'g'))
+  if !empty(a:mapping) && has_key(a:mapping, 'rhs') && has_key(a:mapping, 'sid')
+    " Replace '<SID>' with reference to orginal script!
+    " NB. for an explanation, see: https://vi.stackexchange.com/a/7735
+    let a:mapping.rhs = substitute(a:mapping.rhs, '\c<sid[>]', '<snr>' . a:mapping.sid . '_', 'g')
+
+    call mapset('c', 0, a:mapping)
   endif
 endfunction
 
