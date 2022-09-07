@@ -334,22 +334,7 @@ endfunction
 " s:restore_mapping() {{{2
 function! s:restore_mapping(mapping)
   if !empty(a:mapping)
-    let l:cmd = printf('%s %s%s%s%s %s %s',
-          \ (a:mapping.noremap ? 'cnoremap' : 'cmap'),
-          \ (a:mapping.silent  ? '<silent>' : ''    ),
-          \ (a:mapping.buffer  ? '<buffer>' : ''    ),
-          \ (a:mapping.nowait  ? '<nowait>' : ''    ),
-          \ (a:mapping.expr    ? '<expr>'   : ''    ),
-          \  a:mapping.lhs,
-          \  substitute(a:mapping.rhs, '\c<sid>', '<SNR>'.a:mapping.sid.'_', 'g'))
-    try
-      execute l:cmd
-		catch /^Vim\%((\a\+)\)\=:E716:/ " catch error E716
-      let l:msg = printf('error(grepper): caught "%s" in %s; attempted cmd: %s',
-        \ v:exception,
-        \ v:throwpoint)
-      echomsg l:msg
-    endtry
+    call mapset('c', 0, a:mapping)
   endif
 endfunction
 
