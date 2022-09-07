@@ -333,7 +333,11 @@ endfunction
 
 " s:restore_mapping() {{{2
 function! s:restore_mapping(mapping)
-  if !empty(a:mapping)
+  if !empty(a:mapping) && has_key(a:mapping, 'rhs') && has_key(a:mapping, 'sid')
+    " Replace '<SID>' with reference to orginal script!
+    " NB. for an explanation, see: https://vi.stackexchange.com/a/7735
+    let a:mapping.rhs = substitute(a:mapping.rhs, '\c<sid[>]', '<snr>' . a:mapping.sid . '_', 'g')
+
     call mapset('c', 0, a:mapping)
   endif
 endfunction
