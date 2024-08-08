@@ -43,7 +43,7 @@ let s:defaults = {
       \ 'ag':            { 'grepprg':    'ag --vimgrep',
       \                    'grepformat': '%f:%l:%c:%m,%f:%l:%m,%f',
       \                    'escape':     '\^$.*+?()[]{}|' },
-      \ 'rg':            { 'grepprg':    'rg -H --no-heading --vimgrep' . (has('win32') ? ' $* .' : ''),
+      \ 'rg':            { 'grepprg':    'rg -H --no-heading --vimgrep',
       \                    'grepformat': '%f:%l:%c:%m,%f',
       \                    'escape':     '\^$.*+?()[]{}|' },
       \ 'pt':            { 'grepprg':    'pt --nogroup',
@@ -324,12 +324,26 @@ endfunction
 
 " s:restore_mapping() {{{2
 function! s:restore_mapping(mapping)
-  if !empty(a:mapping) && has_key(a:mapping, 'rhs') && has_key(a:mapping, 'sid')
-    " Replace '<SID>' with reference to orginal script!
-    " NB. for an explanation, see: https://vi.stackexchange.com/a/7735
-    let a:mapping.rhs = substitute(a:mapping.rhs, '\c<sid[>]', '<snr>' . a:mapping.sid . '_', 'g')
+  if !empty(a:mapping)
+    if has('nvim') && has_key(a:mapping, 'callback')
+      " https://github.com/neovim/neovim/issues/23666
+      let opts = {
+            \ 'desc': get(a:mapping, 'desc', ''),
+            \ 'noremap': a:mapping.noremap,
+            \ 'silent': a:mapping.silent,
+            \ 'buffer': a:mapping.buffer ? 0 : -1,
+            \ 'nowait': a:mapping.nowait,
+            \}
+      call v:lua.vim.keymap.set(a:mapping.mode, a:mapping.lhs, a:mapping.callback, opts)
+    else
+      if !empty(a:mapping) && has_key(a:mapping, 'rhs') && has_key(a:mapping, 'sid')
+        " Replace '<SID>' with reference to orginal script!
+        " NB. for an explanation, see: https://vi.stackexchange.com/a/7735
+        let a:mapping.rhs = substitute(a:mapping.rhs, '\c<sid[>]', '<snr>' . a:mapping.sid . '_', 'g')
 
-    call mapset('c', 0, a:mapping)
+        call mapset('c', 0, a:mapping)
+      endif
+    endif
   endif
 endfunction
 
